@@ -6,18 +6,14 @@ s/^no nat inet from ! <priv4>$/nat-anchor "AirPort-nat-before"\
 rdr-anchor "AirPort-nat-before"\
 &/
 
-# Add the nat-after anchor
+# Add the nat-after and filter-before anchor
 /nat-anchor \"AirPort-nat-after\"/d
 /rdr-anchor \"AirPort-nat-after\"/d
+/anchor \"AirPort-filter-before\"/d
 
 s/^block drop in quick from 224.0.0.0\/3$/nat-anchor "AirPort-nat-after"\
 rdr-anchor "AirPort-nat-after"\
-&/
-
-# Add the filter-before anchor
-/anchor \"AirPort-filter-before\"/d
-
-s/^block drop in quick from 224.0.0.0\/3$/anchor "AirPort-filter-before"\
+anchor "AirPort-filter-before"\
 &/
 
 # Add the filter-after anchor
