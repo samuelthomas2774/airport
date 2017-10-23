@@ -1,0 +1,33 @@
+# Add the nat-before anchor
+/nat-anchor \"AirPort-nat-before\"/d
+/rdr-anchor \"AirPort-nat-before\"/d
+
+s/^no nat inet from ! <priv4>$/nat-anchor "AirPort-nat-before"\
+rdr-anchor "AirPort-nat-before"\
+&/
+
+# Add the nat-after anchor
+/nat-anchor \"AirPort-nat-after\"/d
+/rdr-anchor \"AirPort-nat-after\"/d
+
+s/^block drop in quick from 224.0.0.0\/3$/nat-anchor "AirPort-nat-after"\
+rdr-anchor "AirPort-nat-after"\
+&/
+
+# Add the filter-before anchor
+/anchor \"AirPort-filter-before\"/d
+
+s/^block drop in quick from 224.0.0.0\/3$/anchor "AirPort-filter-before"\
+&/
+
+# Add the filter-after anchor
+/anchor "AirPort-filter-after"/d
+
+s/^anchor "natpmp"$/anchor "AirPort-filter-after"\
+&/
+
+# Add the natpmp-after anchor
+/anchor "AirPort-natpmp-after"/d
+
+s/^anchor "ftp-proxy\/\*"$/&\
+anchor "AirPort-natpmp-after"/

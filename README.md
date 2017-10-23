@@ -10,3 +10,4 @@ See the [wiki](https://github.com/samuelthomas2774/airport/wiki) for more inform
 - [ ] Check if the reset button deletes [/mnt/Flash/rc.local](startup-scripts/AirPort-rc.local.sh)
 - [x] Add (some) security on [/AirPort-rc.local.sh](startup-scripts/AirPort-rc.local.sh)
 - [ ] Add ACP properties and their description
+- [x] Write a script to inject anchors into `/etc/pf.conf`
