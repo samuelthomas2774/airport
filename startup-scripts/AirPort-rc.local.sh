@@ -2,9 +2,11 @@
 # Save this to /mnt/Flash/AirPort-rc.local.sh
 # This file first mounts /dev/dk0 in /Volumes/dk0, then executes /Volumes/dk0/AirPort-startup.sh
 
+FLASH="/mnt/Flash"
 DEVICE="/dev/dk0"
 MOUNT="/Volumes/dk0"
 SCRIPT="/AirPort-startup.sh"
+KEY_FILE="/AirPort-hash.key"
 LOG="/AirPort-rc.local.sh.log"
 DEBUG_INFO="/AirPort-rc.local.sh.debug.log"
 
@@ -28,10 +30,44 @@ fi
 if [ -x $MOUNT$SCRIPT ]
 then
 	echo "[`date`] $MOUNT$SCRIPT exists and is executable" >> $LOG
-	echo "[`date`] Running it now..." >> $LOG
-	cd $MOUNT
-	$MOUNT$SCRIPT >> $LOG 2>&1
-	echo "[`date`] Done!" >> $LOG
+	
+	# The SHA512 hash of /Volumes/dk0/AirPort-hash.key must match the contents of /mnt/Flash/AirPort-hash.key
+	RUN=false
+	if [ -f /mnt/Flash$KEY_FILE ]
+	then
+		echo "[`date`] $FLASH$KEY_FILE exists" >> $LOG
+		
+		if [ -f $MOUNT$KEY_FILE ]
+		then
+			echo "[`date`] Checking hash of $MOUNT$KEY_FILE" >> $LOG
+			KEY_HASH=`openssl dgst -r -sha512 $MOUNT$KEY_FILE | sed -E -e "s/^.*([a-zA-Z0-9]{128}).*\$/\1/g"`
+			echo "[`date`] Hash of $MOUNT$KEY_FILE is $KEY_HASH" >> $LOG
+			
+			if [ "$KEY_HASH" = "`cat $FLASH$KEY_FILE`" ]
+			then
+				echo "[`date`] Hash on $FLASH and $MOUNT match!" >> $LOG
+				RUN=true
+			else
+				echo "[`date`] !!! Hash on $FLASH and $MOUNT DO NOT match !!!" >> $LOG
+			fi
+		else
+			echo "[`date`] Hash file exists on $FLASH, but not on $MOUNT" >> $LOG
+		fi
+	else
+		echo "[`date`] !!! /mnt/Flash$KEY_FILE does not exist !!!" >> $LOG
+		echo "[`date`] Skipping verification" >> $LOG
+		RUN=true
+	fi
+	
+	if [ $RUN = true ]
+	then
+		echo "[`date`] Running $MOUNT$SCRIPT..." >> $LOG
+		cd $MOUNT
+		$MOUNT$SCRIPT >> $LOG 2>&1
+		echo "[`date`] Done!" >> $LOG
+	else
+		echo "[`date`] Verification failed" >> $LOG
+	fi
 fi
 
 # Unmount the disk - before diskd tries to mount it again
